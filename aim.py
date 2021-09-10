@@ -113,7 +113,7 @@ def calculate_aim_difficulty(beatmap: Beatmap, hr=False, dt=False):
 
 
 def calculate_aim_stars(beatmap: Beatmap, hr=False, dt=False):
-    scale = 300
+    scale = 295
     exp = math.log(1.4) / math.log(1.5)  # 0.83
     aim_difficulty = calculate_aim_difficulty(beatmap, hr, dt)
     return scale * math.pow(aim_difficulty, exp)
