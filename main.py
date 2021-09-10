@@ -30,7 +30,7 @@ if __name__ == '__main__':
         tap_sr = tap.calculate_tap_stars(beatmap, hr, dt)
         tap_star_list.append(round(tap_sr, 2))
 
-        total_sr = pow(aim_sr ** 3 + tap_sr ** 3,  1 / 3)
+        total_sr = pow(aim_sr ** 3 + tap_sr ** 3, 1 / 3)
         total_star_list.append(round(total_sr, 2))
 
         aim_pp = aim_sr ** 3
@@ -44,7 +44,8 @@ if __name__ == '__main__':
 
         total_pp_list.append(round(aim_pp + tap_pp + acc_pp))
 
-    accuracy = (300 * (len(beatmap.hit_objects) + 1 - count_100 - count_50) + 100 * count_100 + 50 * count_50) / (300 * (len(beatmap.hit_objects) + 1))
+    accuracy = (300 * (len(beatmap.hit_objects) - count_100 - count_50) + 100 * count_100 + 50 * count_50) / (
+                300 * (len(beatmap.hit_objects)))
 
     print()
 
