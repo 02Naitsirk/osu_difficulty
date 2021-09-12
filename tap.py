@@ -16,31 +16,26 @@ def calculate_tap_difficulty(beatmap: Beatmap, hr=False, dt=False):
     if dt:
         clock_rate = 1.5
 
-    streak = 0
-    lowest_effective_delta_time = math.inf
-    for i in range(2, len(hit_objects)):
+    strain = 0
+    max_strain = 0
+    for i in range(1, len(hit_objects)):
         current = hit_objects[i]
         last = hit_objects[i - 1]
-        second_last = hit_objects[i - 2]
 
         delta_time = (current.time - last.time) / clock_rate
-        last_delta_time = (last.time - second_last.time) / clock_rate
 
-        ratio = min(1, delta_time / last_delta_time)
+        strain += 1 / delta_time
+        strain *= math.pow(1 / math.e, delta_time / 1000)
 
-        streak += 1
-        streak *= ratio
+        if strain > max_strain:
+            max_strain = strain
 
-        effective_delta_time = delta_time / math.log2(math.log2(2 + streak))
-        if effective_delta_time < lowest_effective_delta_time:
-            lowest_effective_delta_time = effective_delta_time
-
-    return 1 / lowest_effective_delta_time
+    return max_strain
 
 
 def calculate_tap_stars(beatmap: Beatmap, hr=False, dt=False):
-    scale = 90
-    exp = math.log(1.4) / math.log(1.5)  # 0.83
+    scale = 0.15 * 90
+    exp = 0.5  # 0.83
     tap_difficulty = calculate_tap_difficulty(beatmap, hr, dt)
     return scale * math.pow(tap_difficulty, exp)
 
