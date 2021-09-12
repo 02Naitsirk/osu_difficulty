@@ -1,5 +1,6 @@
 import math
 
+from scipy import integrate
 from scipy import optimize
 
 from Beatmap import Beatmap
@@ -22,9 +23,6 @@ def calculate_hit_probability(current: HitObject, last: HitObject, second_last: 
 
     x_deviation = math.sqrt(x_shift) / (delta_time * skill)
     y_deviation = math.sqrt(y_shift) / (delta_time * skill)
-
-    x_hit_probability: float
-    y_hit_probability: float
 
     if second_last is not None:
 
@@ -60,17 +58,25 @@ def calculate_hit_probability(current: HitObject, last: HitObject, second_last: 
         x_deviation *= 0.7
         y_deviation *= 0.7
 
-    if x_shift == 0:
-        x_hit_probability = 1
-    else:
-        x_hit_probability = math.erf(radius / (math.sqrt(2) * x_deviation))
+    if x_shift == 0 and y_shift == 0:
+        return 1
 
-    if y_shift == 0:
-        y_hit_probability = 1
-    else:
-        y_hit_probability = math.erf(radius / (math.sqrt(2) * y_deviation))
+    # vertical movement with 0 horizontal movement:
+    elif x_shift > 0 and y_shift == 0:
+        return math.erf(radius / (math.sqrt(2) * x_deviation))
 
-    return x_hit_probability * y_hit_probability
+    # horizontal movement with 0 vertical movement:
+    elif y_shift > 0 and x_shift == 0:
+        return math.erf(radius / (math.sqrt(2) * y_deviation))
+
+    # both vertical and horizontal movement:
+    else:
+        maximum_integration_bound = 50  # should be radius ** 2 / y_deviation ** 2, but that breaks quad()
+        lower_bound = 0
+        upper_bound = min(radius ** 2 / y_deviation ** 2, maximum_integration_bound)
+        return math.sqrt(math.pi) / (math.pi * math.sqrt(2)) * integrate.quad(
+            lambda x: math.erf(math.sqrt((radius ** 2 - x * y_deviation ** 2) / (2 * x_deviation ** 2))) * math.exp(
+                -x / 2) / math.sqrt(x), lower_bound, upper_bound)[0]
 
 
 def calculate_aim_difficulty(beatmap: Beatmap, hr=False, dt=False):
@@ -113,7 +119,7 @@ def calculate_aim_difficulty(beatmap: Beatmap, hr=False, dt=False):
 
 
 def calculate_aim_stars(beatmap: Beatmap, hr=False, dt=False):
-    scale = 295
+    scale = 285
     exp = math.log(1.4) / math.log(1.5)  # 0.83
     aim_difficulty = calculate_aim_difficulty(beatmap, hr, dt)
     return scale * math.pow(aim_difficulty, exp)
